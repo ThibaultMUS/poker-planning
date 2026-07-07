@@ -2,11 +2,21 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import VotingCards from "./VotingCards";
 import PlayerCard from "./PlayerCard";
+import StatsCard from "./StatsCard";
+import { computeStats } from "../utils/roomStats";
 
-export default function Room({ playerName, roomCode }) {
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [revealed, setRevealed] = useState(false);
-  const [players, setPlayers] = useState([]);
+export default function Room({
+  playerName,
+  roomCode,
+}) {
+  const [selectedCard, setSelectedCard] =
+    useState(null);
+
+  const [revealed, setRevealed] =
+    useState(false);
+
+  const [players, setPlayers] =
+    useState([]);
 
   useEffect(() => {
     async function init() {
@@ -61,10 +71,12 @@ export default function Room({ playerName, roomCode }) {
       .maybeSingle();
 
     if (!data) {
-      await supabase.from("rooms").insert({
-        room_code: roomCode,
-        revealed: false,
-      });
+      await supabase
+        .from("rooms")
+        .insert({
+          room_code: roomCode,
+          revealed: false,
+        });
     }
   }
 
@@ -92,16 +104,19 @@ export default function Room({ playerName, roomCode }) {
   async function handleVote(card) {
     setSelectedCard(card);
 
-    await supabase.from("votes").upsert(
-      {
-        room_code: roomCode,
-        player_name: playerName,
-        vote: card,
-      },
-      {
-        onConflict: "room_code,player_name",
-      }
-    );
+    await supabase
+      .from("votes")
+      .upsert(
+        {
+          room_code: roomCode,
+          player_name: playerName,
+          vote: card,
+        },
+        {
+          onConflict:
+            "room_code,player_name",
+        }
+      );
   }
 
   async function revealRoom() {
@@ -138,72 +153,71 @@ export default function Room({ playerName, roomCode }) {
   const totalPlayers = players.length;
   const totalVotes = votedPlayers.length;
 
-  const numericVotes = players
-    .map((player) => Number(player.vote))
-    .filter((vote) => !isNaN(vote));
-
-  const average =
-    numericVotes.length > 0
-      ? (
-          numericVotes.reduce(
-            (sum, vote) => sum + vote,
-            0
-          ) / numericVotes.length
-        ).toFixed(2)
-      : 0;
-
-  const sortedVotes = [...numericVotes].sort(
-    (a, b) => a - b
-  );
-
-  const median =
-    sortedVotes.length === 0
-      ? 0
-      : sortedVotes.length % 2 === 0
-      ? (
-          sortedVotes[
-            sortedVotes.length / 2 - 1
-          ] +
-          sortedVotes[
-            sortedVotes.length / 2
-          ]
-        ) / 2
-      : sortedVotes[
-          Math.floor(sortedVotes.length / 2)
-        ];
-
-  const minVote =
-    numericVotes.length > 0
-      ? Math.min(...numericVotes)
-      : 0;
-
-  const maxVote =
-    numericVotes.length > 0
-      ? Math.max(...numericVotes)
-      : 0;
-
-  const spread =
-    numericVotes.length > 0
-      ? maxVote - minVote
-      : 0;
+  const {
+    average,
+    median,
+    minVote,
+    maxVote,
+    spread,
+  } = computeStats(players);
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>♠️ Room {roomCode}</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0f172a",
+        color: "white",
+        padding: "2rem",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "2.5rem",
+          marginBottom: ".5rem",
+        }}
+      >
+        ♠️ Poker Planning
+      </h1>
 
-      <p>Lien de partage :</p>
+      <h2
+        style={{
+          color: "#38bdf8",
+          marginBottom: "2rem",
+        }}
+      >
+        Room {roomCode}
+      </h2>
+
+      <p>
+        Lien de partage :
+      </p>
 
       <input
         readOnly
         value={`${window.location.origin}/?room=${roomCode}`}
         style={{
           width: "100%",
-          padding: "0.5rem",
+          padding: "12px",
+          borderRadius: "8px",
+          border:
+            "1px solid #334155",
+          background: "#1e293b",
+          color: "white",
           marginBottom: "1rem",
         }}
       />
 
       <button
+        style={{
+          background: "#3b82f6",
+          color: "white",
+          border: "none",
+          padding:
+            "10px 20px",
+          borderRadius: "8px",
+          cursor: "pointer",
+          marginBottom: "1rem",
+        }}
         onClick={() =>
           navigator.clipboard.writeText(
             `${window.location.origin}/?room=${roomCode}`
@@ -214,26 +228,32 @@ export default function Room({ playerName, roomCode }) {
       </button>
 
       <p>
-        Connecté en tant que <b>{playerName}</b>
+        Connecté en tant que{" "}
+        <b>{playerName}</b>
       </p>
 
       <div
         style={{
-          padding: "0.75rem",
-          background: "#e8f5e9",
-          borderRadius: "8px",
+          padding: ".75rem",
+          background: "#1e293b",
+          border:
+            "1px solid #334155",
+          borderRadius: "12px",
           marginBottom: "1rem",
+          color: "#38bdf8",
           fontWeight: "bold",
         }}
       >
-        🗳️ Votes : {totalVotes}/{totalPlayers}
+        🗳️ Votes : {totalVotes}/
+        {totalPlayers}
       </div>
 
-      {totalVotes === totalPlayers &&
+      {totalVotes ===
+        totalPlayers &&
         totalPlayers > 0 && (
           <div
             style={{
-              color: "green",
+              color: "#22c55e",
               fontWeight: "bold",
               marginBottom: "1rem",
             }}
@@ -244,17 +264,19 @@ export default function Room({ playerName, roomCode }) {
 
       <div
         style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit,minmax(160px,1fr))",
           gap: "1rem",
           margin: "2rem 0",
-          flexWrap: "wrap",
         }}
       >
         {players.map((player) => (
           <PlayerCard
             key={player.id}
             player={{
-              name: player.player_name,
+              name:
+                player.player_name,
               vote: player.vote,
             }}
             revealed={revealed}
@@ -268,50 +290,49 @@ export default function Room({ playerName, roomCode }) {
       />
 
       {revealed && (
-        <div
-          style={{
-            marginTop: "2rem",
-            padding: "1rem",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "8px",
-          }}
-        >
-          <h3>📊 Statistiques</h3>
-
-          <p>Moyenne : <b>{average}</b></p>
-          <p>Médiane : <b>{median}</b></p>
-          <p>Minimum : <b>{minVote}</b></p>
-          <p>Maximum : <b>{maxVote}</b></p>
-          <p>Écart : <b>{spread}</b></p>
-
-          {spread <= 3 && (
-            <p style={{ color: "green" }}>
-              ✅ Forte convergence
-            </p>
-          )}
-
-          {spread > 3 && spread <= 8 && (
-            <p style={{ color: "orange" }}>
-              ⚠️ Quelques divergences
-            </p>
-          )}
-
-          {spread > 8 && (
-            <p style={{ color: "red" }}>
-              🔥 Forte divergence
-            </p>
-          )}
-        </div>
+        <StatsCard
+          average={average}
+          median={median}
+          minVote={minVote}
+          maxVote={maxVote}
+          spread={spread}
+        />
       )}
 
-      <div style={{ marginTop: "2rem" }}>
-        <button onClick={revealRoom}>
+      <div
+        style={{
+          marginTop: "2rem",
+        }}
+      >
+        <button
+          onClick={revealRoom}
+          style={{
+            background:
+              "#22c55e",
+            color: "white",
+            border: "none",
+            padding:
+              "10px 20px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
           Reveal
         </button>
 
         <button
-          style={{ marginLeft: "1rem" }}
           onClick={resetRoom}
+          style={{
+            marginLeft: "1rem",
+            background:
+              "#ef4444",
+            color: "white",
+            border: "none",
+            padding:
+              "10px 20px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
         >
           Reset Room
         </button>

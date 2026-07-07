@@ -18,8 +18,9 @@ export default function VotingCards({
     <div
       style={{
         display: "flex",
-        gap: "0.5rem",
+        gap: "1rem",
         flexWrap: "wrap",
+        marginTop: "2rem",
       }}
     >
       {cards.map((card) => (
@@ -27,20 +28,26 @@ export default function VotingCards({
           key={card}
           onClick={() => onSelect(card)}
           style={{
-            width: "60px",
-            height: "90px",
-            cursor: "pointer",
-            border:
-              selected === card
-                ? "3px solid blue"
-                : "1px solid #ccc",
+            width: "70px",
+            height: "100px",
             background:
               selected === card
-                ? "#e6f0ff"
-                : "white",
-            borderRadius: "8px",
+                ? "#0ea5e9"
+                : "#1e293b",
+            color: "white",
+            border:
+              selected === card
+                ? "3px solid #38bdf8"
+                : "1px solid #334155",
+            borderRadius: "14px",
+            cursor: "pointer",
+            fontSize: "1.4rem",
             fontWeight: "bold",
-            fontSize: "1.2rem",
+            boxShadow:
+              selected === card
+                ? "0 0 20px rgba(56,189,248,.5)"
+                : "0 4px 10px rgba(0,0,0,.25)",
+            transition: "all .2s ease",
           }}
         >
           {card}
