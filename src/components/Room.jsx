@@ -14,6 +14,10 @@ export default function Room({
 
   const [revealed, setRevealed] =
     useState(false);
+  const [
+  estimationType,
+  setEstimationType,
+] = useState("fibonacci");
 
   const [players, setPlayers] =
     useState([]);
@@ -79,7 +83,18 @@ export default function Room({
       supabase.removeChannel(playersChannel);
     };
   }, [roomCode]);
+async function updateEstimationType(
+  value
+) {
+  setEstimationType(value);
 
+  await supabase
+    .from("rooms")
+    .update({
+      estimation_type: value,
+    })
+    .eq("room_code", roomCode);
+}
   async function createRoomIfNeeded() {
     const { data } = await supabase
       .from("rooms")
@@ -128,10 +143,14 @@ export default function Room({
       .eq("room_code", roomCode)
       .single();
 
-    if (data) {
-      setRevealed(data.revealed);
-    }
-  }
+if (data) {
+  setRevealed(data.revealed);
+
+  setEstimationType(
+    data.estimation_type ||
+      "fibonacci"
+  );
+}  }
 
   async function loadVotes() {
     const { data } = await supabase
@@ -218,8 +237,37 @@ export default function Room({
       >
         Room {roomCode}
       </h2>
+<div
+  style={{
+    marginBottom: "2rem",
+  }}
+>
+  <label>
+    Méthode d'estimation :
+  </label>
 
-      <p>🔗 Lien de partage</p>
+  <select
+    value={estimationType}
+    onChange={(e) =>
+      updateEstimationType(
+        e.target.value
+      )
+    }
+    style={{
+      marginLeft: "1rem",
+      padding: "8px",
+      borderRadius: "8px",
+    }}
+  >
+    <option value="fibonacci">
+      Fibonacci
+    </option>
+
+    <option value="tshirt">
+      Taille T-Shirt
+    </option>
+  </select>
+</div>      <p>🔗 Lien de partage</p>
 
       <input
         readOnly
@@ -234,19 +282,27 @@ export default function Room({
         }}
       />
 
-      <button
-        style={{
-          marginTop: "1rem",
-        }}
-        onClick={() =>
-          navigator.clipboard.writeText(
-            `${window.location.origin}/?room=${roomCode}`
-          )
-        }
-      >
-        Copier le lien
-      </button>
-
+<button
+  style={{
+    marginTop: "1rem",
+    background: "#3b82f6",
+    color: "white",
+    border: "none",
+    padding: "12px 24px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    boxShadow:
+      "0 4px 10px rgba(59,130,246,.3)",
+  }}
+  onClick={() =>
+    navigator.clipboard.writeText(
+      `${window.location.origin}/?room=${roomCode}`
+    )
+  }
+>
+  🔗 Copier le lien
+</button>
       <h3
         style={{
           marginTop: "2rem",
@@ -350,44 +406,65 @@ export default function Room({
         ))}
       </div>
 
-      <VotingCards
-        selected={selectedCard}
-        onSelect={handleVote}
-      />
+<VotingCards
+  selected={selectedCard}
+  onSelect={handleVote}
+  estimationType={estimationType}
+/>
+{revealed &&
+  estimationType === "fibonacci" && (
+    <StatsCard
+      average={stats.average}
+      median={stats.median}
+      minVote={stats.minVote}
+      maxVote={stats.maxVote}
+      spread={stats.spread}
+      majorityVote={stats.majorityVote}
+    />
+  )}
+<div
+  style={{
+    marginTop: "2rem",
+    display: "flex",
+    gap: "1rem",
+  }}
+>
+  <button
+    onClick={revealRoom}
+    style={{
+      background: "#22c55e",
+      color: "white",
+      border: "none",
+      padding: "12px 24px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontWeight: "bold",
+      fontSize: "1rem",
+      boxShadow:
+        "0 4px 10px rgba(34,197,94,.3)",
+    }}
+  >
+    👀 Reveal
+  </button>
 
-      {revealed && (
-        <StatsCard
-          average={stats.average}
-          median={stats.median}
-          minVote={stats.minVote}
-          maxVote={stats.maxVote}
-          spread={stats.spread}
-          majorityVote={
-            stats.majorityVote
-          }
-        />
-      )}
-
-      <div
-        style={{
-          marginTop: "2rem",
-        }}
-      >
-        <button
-          onClick={revealRoom}
-        >
-          Reveal
-        </button>
-
-        <button
-          onClick={resetRoom}
-          style={{
-            marginLeft: "1rem",
-          }}
-        >
-          Reset Room
-        </button>
-      </div>
+  <button
+    onClick={resetRoom}
+    style={{
+      background: "#ef4444",
+      color: "white",
+      border: "none",
+      padding: "12px 24px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontWeight: "bold",
+      fontSize: "1rem",
+      boxShadow:
+        "0 4px 10px rgba(239,68,68,.3)",
+    }}
+  >
+    🔄 Reset Room
+  </button>
+</div>
     </div>
   );
 }

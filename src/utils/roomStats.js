@@ -30,7 +30,9 @@ export function computeStats(players) {
           ]
         ) / 2
       : sortedVotes[
-          Math.floor(sortedVotes.length / 2)
+          Math.floor(
+            sortedVotes.length / 2
+          )
         ];
 
   const minVote =
@@ -48,11 +50,31 @@ export function computeStats(players) {
       ? maxVote - minVote
       : 0;
 
+  const voteCounts = {};
+
+  numericVotes.forEach((vote) => {
+    voteCounts[vote] =
+      (voteCounts[vote] || 0) + 1;
+  });
+
+  let majorityVote = null;
+  let maxCount = 0;
+
+  Object.entries(voteCounts).forEach(
+    ([vote, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        majorityVote = vote;
+      }
+    }
+  );
+
   return {
     average,
     median,
     minVote,
     maxVote,
     spread,
+    majorityVote,
   };
 }

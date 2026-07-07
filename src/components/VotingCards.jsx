@@ -1,4 +1,4 @@
-const cards = [
+const fibonacciCards = [
   "0",
   "1",
   "2",
@@ -7,13 +7,28 @@ const cards = [
   "8",
   "13",
   "21",
-  "?"
+  "?",
+];
+
+const tshirtCards = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
 ];
 
 export default function VotingCards({
   selected,
   onSelect,
+  estimationType,
 }) {
+  const cards =
+    estimationType === "tshirt"
+      ? tshirtCards
+      : fibonacciCards;
+
   return (
     <div
       style={{
