@@ -1,12 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Room from "./components/Room";
 
 export default function App() {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
-  const [joined, setJoined] = useState(false);
+function generateRoomCode() {
+  const chars =
+    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+  let code = "";
+
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(
+      Math.floor(Math.random() * chars.length)
+    );
+  }
+
+  setRoomCode(code);
+}  const [joined, setJoined] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(
+      window.location.search
+    );
+
+    const room = params.get("room");
+
+    if (room) {
+      setRoomCode(room);
+    }
+  }, []);
 
   const handleJoin = () => {
+    if (!roomCode.trim()) {
+  generateRoomCode();
+  return;
+}
     if (!playerName.trim()) return;
     if (!roomCode.trim()) return;
 
@@ -40,6 +69,14 @@ export default function App() {
           onChange={(e) => setRoomCode(e.target.value)}
           placeholder="Code room (ex: SPRINT42)"
         />
+        <button
+  style={{
+    marginTop: "0.5rem"
+  }}
+  onClick={generateRoomCode}
+>
+  Créer une room
+</button>
       </div>
 
       <div style={{ marginTop: "1rem" }}>

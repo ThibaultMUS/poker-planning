@@ -41,8 +41,7 @@ export default function Room({ playerName, roomCode }) {
           schema: "public",
           table: "rooms",
         },
-        (payload) => {
-          console.log("ROOM UPDATE", payload);
+        () => {
           loadRoom();
         }
       )
@@ -62,12 +61,10 @@ export default function Room({ playerName, roomCode }) {
       .maybeSingle();
 
     if (!data) {
-      await supabase
-        .from("rooms")
-        .insert({
-          room_code: roomCode,
-          revealed: false,
-        });
+      await supabase.from("rooms").insert({
+        room_code: roomCode,
+        revealed: false,
+      });
     }
   }
 
@@ -77,8 +74,6 @@ export default function Room({ playerName, roomCode }) {
       .select("*")
       .eq("room_code", roomCode)
       .single();
-
-    console.log("LOAD ROOM =", data);
 
     if (data) {
       setRevealed(data.revealed);
@@ -97,18 +92,16 @@ export default function Room({ playerName, roomCode }) {
   async function handleVote(card) {
     setSelectedCard(card);
 
-    await supabase
-      .from("votes")
-      .upsert(
-        {
-          room_code: roomCode,
-          player_name: playerName,
-          vote: card,
-        },
-        {
-          onConflict: "room_code,player_name",
-        }
-      );
+    await supabase.from("votes").upsert(
+      {
+        room_code: roomCode,
+        player_name: playerName,
+        vote: card,
+      },
+      {
+        onConflict: "room_code,player_name",
+      }
+    );
   }
 
   async function revealRoom() {
@@ -136,17 +129,118 @@ export default function Room({ playerName, roomCode }) {
     setSelectedCard(null);
   }
 
+  const votedPlayers = players.filter(
+    (player) =>
+      player.vote !== null &&
+      player.vote !== undefined
+  );
+
+  const totalPlayers = players.length;
+  const totalVotes = votedPlayers.length;
+
+  const numericVotes = players
+    .map((player) => Number(player.vote))
+    .filter((vote) => !isNaN(vote));
+
+  const average =
+    numericVotes.length > 0
+      ? (
+          numericVotes.reduce(
+            (sum, vote) => sum + vote,
+            0
+          ) / numericVotes.length
+        ).toFixed(2)
+      : 0;
+
+  const sortedVotes = [...numericVotes].sort(
+    (a, b) => a - b
+  );
+
+  const median =
+    sortedVotes.length === 0
+      ? 0
+      : sortedVotes.length % 2 === 0
+      ? (
+          sortedVotes[
+            sortedVotes.length / 2 - 1
+          ] +
+          sortedVotes[
+            sortedVotes.length / 2
+          ]
+        ) / 2
+      : sortedVotes[
+          Math.floor(sortedVotes.length / 2)
+        ];
+
+  const minVote =
+    numericVotes.length > 0
+      ? Math.min(...numericVotes)
+      : 0;
+
+  const maxVote =
+    numericVotes.length > 0
+      ? Math.max(...numericVotes)
+      : 0;
+
+  const spread =
+    numericVotes.length > 0
+      ? maxVote - minVote
+      : 0;
+
   return (
     <div style={{ padding: "2rem" }}>
       <h1>♠️ Room {roomCode}</h1>
 
-      <p>
-        Reveal : {revealed ? "TRUE" : "FALSE"}
-      </p>
+      <p>Lien de partage :</p>
+
+      <input
+        readOnly
+        value={`${window.location.origin}/?room=${roomCode}`}
+        style={{
+          width: "100%",
+          padding: "0.5rem",
+          marginBottom: "1rem",
+        }}
+      />
+
+      <button
+        onClick={() =>
+          navigator.clipboard.writeText(
+            `${window.location.origin}/?room=${roomCode}`
+          )
+        }
+      >
+        Copier le lien
+      </button>
 
       <p>
         Connecté en tant que <b>{playerName}</b>
       </p>
+
+      <div
+        style={{
+          padding: "0.75rem",
+          background: "#e8f5e9",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+          fontWeight: "bold",
+        }}
+      >
+        🗳️ Votes : {totalVotes}/{totalPlayers}
+      </div>
+
+      {totalVotes === totalPlayers &&
+        totalPlayers > 0 && (
+          <div
+            style={{
+              color: "green",
+              fontWeight: "bold",
+              marginBottom: "1rem",
+            }}
+          >
+            ✅ Tout le monde a voté
+          </div>
+        )}
 
       <div
         style={{
@@ -172,6 +266,43 @@ export default function Room({ playerName, roomCode }) {
         selected={selectedCard}
         onSelect={handleVote}
       />
+
+      {revealed && (
+        <div
+          style={{
+            marginTop: "2rem",
+            padding: "1rem",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "8px",
+          }}
+        >
+          <h3>📊 Statistiques</h3>
+
+          <p>Moyenne : <b>{average}</b></p>
+          <p>Médiane : <b>{median}</b></p>
+          <p>Minimum : <b>{minVote}</b></p>
+          <p>Maximum : <b>{maxVote}</b></p>
+          <p>Écart : <b>{spread}</b></p>
+
+          {spread <= 3 && (
+            <p style={{ color: "green" }}>
+              ✅ Forte convergence
+            </p>
+          )}
+
+          {spread > 3 && spread <= 8 && (
+            <p style={{ color: "orange" }}>
+              ⚠️ Quelques divergences
+            </p>
+          )}
+
+          {spread > 8 && (
+            <p style={{ color: "red" }}>
+              🔥 Forte divergence
+            </p>
+          )}
+        </div>
+      )}
 
       <div style={{ marginTop: "2rem" }}>
         <button onClick={revealRoom}>
