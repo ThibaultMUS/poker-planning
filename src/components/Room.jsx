@@ -18,11 +18,18 @@ export default function Room({
   const [players, setPlayers] =
     useState([]);
 
+  const [
+    connectedPlayers,
+    setConnectedPlayers,
+  ] = useState([]);
+
   useEffect(() => {
     async function init() {
       await createRoomIfNeeded();
+      await registerPlayer();
       await loadRoom();
       await loadVotes();
+      await loadPlayers();
     }
 
     init();
@@ -36,9 +43,7 @@ export default function Room({
           schema: "public",
           table: "votes",
         },
-        () => {
-          loadVotes();
-        }
+        () => loadVotes()
       )
       .subscribe();
 
@@ -51,15 +56,27 @@ export default function Room({
           schema: "public",
           table: "rooms",
         },
-        () => {
-          loadRoom();
-        }
+        () => loadRoom()
+      )
+      .subscribe();
+
+    const playersChannel = supabase
+      .channel(`players-${roomCode}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "players",
+        },
+        () => loadPlayers()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(votesChannel);
       supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(playersChannel);
     };
   }, [roomCode]);
 
@@ -78,6 +95,30 @@ export default function Room({
           revealed: false,
         });
     }
+  }
+
+  async function registerPlayer() {
+    await supabase
+      .from("players")
+      .upsert(
+        {
+          room_code: roomCode,
+          player_name: playerName,
+        },
+        {
+          onConflict:
+            "room_code,player_name",
+        }
+      );
+  }
+
+  async function loadPlayers() {
+    const { data } = await supabase
+      .from("players")
+      .select("*")
+      .eq("room_code", roomCode);
+
+    setConnectedPlayers(data || []);
   }
 
   async function loadRoom() {
@@ -150,16 +191,14 @@ export default function Room({
       player.vote !== undefined
   );
 
-  const totalPlayers = players.length;
-  const totalVotes = votedPlayers.length;
+  const totalPlayers =
+    connectedPlayers.length;
 
-  const {
-    average,
-    median,
-    minVote,
-    maxVote,
-    spread,
-  } = computeStats(players);
+  const totalVotes =
+    votedPlayers.length;
+
+  const stats =
+    computeStats(players);
 
   return (
     <div
@@ -170,27 +209,17 @@ export default function Room({
         padding: "2rem",
       }}
     >
-      <h1
-        style={{
-          fontSize: "2.5rem",
-          marginBottom: ".5rem",
-        }}
-      >
-        ♠️ Poker Planning
-      </h1>
+      <h1>♠️ Poker Planning</h1>
 
       <h2
         style={{
           color: "#38bdf8",
-          marginBottom: "2rem",
         }}
       >
         Room {roomCode}
       </h2>
 
-      <p>
-        Lien de partage :
-      </p>
+      <p>🔗 Lien de partage</p>
 
       <input
         readOnly
@@ -198,25 +227,16 @@ export default function Room({
         style={{
           width: "100%",
           padding: "12px",
-          borderRadius: "8px",
-          border:
-            "1px solid #334155",
           background: "#1e293b",
           color: "white",
-          marginBottom: "1rem",
+          border: "1px solid #334155",
+          borderRadius: "8px",
         }}
       />
 
       <button
         style={{
-          background: "#3b82f6",
-          color: "white",
-          border: "none",
-          padding:
-            "10px 20px",
-          borderRadius: "8px",
-          cursor: "pointer",
-          marginBottom: "1rem",
+          marginTop: "1rem",
         }}
         onClick={() =>
           navigator.clipboard.writeText(
@@ -227,40 +247,86 @@ export default function Room({
         Copier le lien
       </button>
 
-      <p>
-        Connecté en tant que{" "}
-        <b>{playerName}</b>
-      </p>
+      <h3
+        style={{
+          marginTop: "2rem",
+        }}
+      >
+        👥 Joueurs connectés
+      </h3>
 
       <div
         style={{
-          padding: ".75rem",
-          background: "#1e293b",
-          border:
-            "1px solid #334155",
-          borderRadius: "12px",
-          marginBottom: "1rem",
-          color: "#38bdf8",
-          fontWeight: "bold",
+          display: "flex",
+          gap: ".5rem",
+          flexWrap: "wrap",
+          marginBottom: "2rem",
         }}
       >
-        🗳️ Votes : {totalVotes}/
-        {totalPlayers}
+        {connectedPlayers.map(
+          (player) => (
+            <div
+              key={player.id}
+              style={{
+                background: "#1e293b",
+                border: "1px solid #334155",
+                borderRadius: "999px",
+                padding: "6px 12px",
+              }}
+            >
+              🟢 {player.player_name}
+            </div>
+          )
+        )}
       </div>
 
-      {totalVotes ===
-        totalPlayers &&
-        totalPlayers > 0 && (
+      <div
+        style={{
+          background: "#1e293b",
+          border: "1px solid #334155",
+          borderRadius: "12px",
+          padding: "1rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+          }}
+        >
+          <span>🗳️ Votes</span>
+          <span>
+            {totalVotes}/{totalPlayers}
+          </span>
+        </div>
+
+        <div
+          style={{
+            marginTop: ".5rem",
+            height: "12px",
+            background: "#334155",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
+        >
           <div
             style={{
-              color: "#22c55e",
-              fontWeight: "bold",
-              marginBottom: "1rem",
+              height: "100%",
+              width: `${
+                totalPlayers > 0
+                  ? (totalVotes *
+                      100) /
+                    totalPlayers
+                  : 0
+              }%`,
+              background: "#38bdf8",
+              transition:
+                "width .3s ease",
             }}
-          >
-            ✅ Tout le monde a voté
-          </div>
-        )}
+          />
+        </div>
+      </div>
 
       <div
         style={{
@@ -291,11 +357,14 @@ export default function Room({
 
       {revealed && (
         <StatsCard
-          average={average}
-          median={median}
-          minVote={minVote}
-          maxVote={maxVote}
-          spread={spread}
+          average={stats.average}
+          median={stats.median}
+          minVote={stats.minVote}
+          maxVote={stats.maxVote}
+          spread={stats.spread}
+          majorityVote={
+            stats.majorityVote
+          }
         />
       )}
 
@@ -306,16 +375,6 @@ export default function Room({
       >
         <button
           onClick={revealRoom}
-          style={{
-            background:
-              "#22c55e",
-            color: "white",
-            border: "none",
-            padding:
-              "10px 20px",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
         >
           Reveal
         </button>
@@ -324,14 +383,6 @@ export default function Room({
           onClick={resetRoom}
           style={{
             marginLeft: "1rem",
-            background:
-              "#ef4444",
-            color: "white",
-            border: "none",
-            padding:
-              "10px 20px",
-            borderRadius: "8px",
-            cursor: "pointer",
           }}
         >
           Reset Room
