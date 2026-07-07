@@ -17,7 +17,7 @@ const tshirtCards = [
   "L",
   "XL",
   "XXL",
-];
+  ];
 
 export default function VotingCards({
   selected,
@@ -43,8 +43,8 @@ export default function VotingCards({
           key={card}
           onClick={() => onSelect(card)}
           style={{
-            width: "70px",
-            height: "100px",
+width: "85px",
+height: "120px",
             background:
               selected === card
                 ? "#0ea5e9"

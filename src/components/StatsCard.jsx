@@ -4,6 +4,7 @@ export default function StatsCard({
   minVote,
   maxVote,
   spread,
+  majorityVote,
 }) {
   return (
     <div
@@ -21,29 +22,58 @@ export default function StatsCard({
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit, minmax(120px,1fr))",
+            "repeat(auto-fit,minmax(120px,1fr))",
           gap: "1rem",
         }}
       >
-        <Stat title="Moyenne" value={average} />
-        <Stat title="Médiane" value={median} />
-        <Stat title="Minimum" value={minVote} />
-        <Stat title="Maximum" value={maxVote} />
-        <Stat title="Écart" value={spread} />
+        <Stat
+          title="Moyenne"
+          value={average}
+        />
+
+        <Stat
+          title="Médiane"
+          value={median}
+        />
+
+        <Stat
+          title="Minimum"
+          value={minVote}
+        />
+
+        <Stat
+          title="Maximum"
+          value={maxVote}
+        />
+
+        <Stat
+          title="Écart"
+          value={spread}
+        />
+
+        <Stat
+          title="Majorité"
+          value={`🏆 ${majorityVote ?? "-"}`}
+        />
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
+      <div
+        style={{
+          marginTop: "1rem",
+        }}
+      >
         {spread <= 3 && (
           <p style={{ color: "#22c55e" }}>
             ✅ Forte convergence
           </p>
         )}
 
-        {spread > 3 && spread <= 8 && (
-          <p style={{ color: "#f59e0b" }}>
-            ⚠️ Quelques divergences
-          </p>
-        )}
+        {spread > 3 &&
+          spread <= 8 && (
+            <p style={{ color: "#f59e0b" }}>
+              ⚠️ Quelques divergences
+            </p>
+          )}
 
         {spread > 8 && (
           <p style={{ color: "#ef4444" }}>
@@ -55,7 +85,10 @@ export default function StatsCard({
   );
 }
 
-function Stat({ title, value }) {
+function Stat({
+  title,
+  value,
+}) {
   return (
     <div
       style={{
@@ -85,4 +118,3 @@ function Stat({ title, value }) {
     </div>
   );
 }
-``

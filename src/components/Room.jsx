@@ -219,252 +219,386 @@ if (data) {
   const stats =
     computeStats(players);
 
-  return (
+return (
+  <div
+    style={{
+      minHeight: "100vh",
+      background: "#0f172a",
+      color: "white",
+      padding: "1rem",
+      maxWidth: "1600px",
+      margin: "0 auto",
+    }}
+  >
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "2rem",
+  }}
+>      <h1
+        style={{
+          margin: 0,
+        }}
+      >
+        ♠️ Poker Planning
+      </h1>
+
+      <div
+        style={{
+          color: "#38bdf8",
+          fontWeight: "bold",
+          fontSize: "1.2rem",
+        }}
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+  }}
+>
+  <div
+    style={{
+      color: "#38bdf8",
+      fontWeight: "bold",
+      fontSize: "1.2rem",
+    }}
+  >
+    Room {roomCode}
+  </div>
+
+  <button
+    onClick={() =>
+      navigator.clipboard.writeText(
+        `${window.location.origin}/?room=${roomCode}`
+      )
+    }
+    style={{
+      background: "#2563eb",
+      color: "white",
+      border: "none",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontWeight: "bold",
+      boxShadow:
+        "0 4px 10px rgba(37,99,235,.3)",
+    }}
+  >
+    📋 Copier
+  </button>
+</div>
+    </div>
+    <div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(220px,1fr))",
+    gap: "1rem",
+    marginBottom: "2rem",
+  }}
+>
+  <div
+    style={{
+      background: "#1e293b",
+      border: "1px solid #334155",
+      borderRadius: "12px",
+      padding: "1rem",
+    }}
+  >
     <div
       style={{
-        minHeight: "100vh",
-        background: "#0f172a",
-        color: "white",
-        padding: "2rem",
+        fontSize: ".8rem",
+        color: "#94a3b8",
       }}
     >
-      <h1>♠️ Poker Planning</h1>
+      Méthode
+    </div>
 
-      <h2
+    <select
+      value={estimationType}
+      onChange={(e) =>
+        updateEstimationType(
+          e.target.value
+        )
+      }
+      style={{
+        marginTop: ".5rem",
+        width: "100%",
+        padding: "8px",
+        borderRadius: "8px",
+      }}
+    >
+      <option value="fibonacci">
+        Fibonacci
+      </option>
+
+      <option value="tshirt">
+        Taille T-Shirt
+      </option>
+    </select>
+  </div>
+
+  <div
+    style={{
+      background: "#1e293b",
+      border: "1px solid #334155",
+      borderRadius: "12px",
+      padding: "1rem",
+    }}
+  >
+    <div
+      style={{
+        fontSize: ".8rem",
+        color: "#94a3b8",
+      }}
+    >
+      Joueurs
+    </div>
+
+    <div
+      style={{
+        fontSize: "2rem",
+        fontWeight: "bold",
+      }}
+    >
+      {totalPlayers}
+    </div>
+  </div>
+
+  <div
+    style={{
+      background: "#1e293b",
+      border: "1px solid #334155",
+      borderRadius: "12px",
+      padding: "1rem",
+    }}
+  >
+    <div
+      style={{
+        fontSize: ".8rem",
+        color: "#94a3b8",
+      }}
+    >
+      Votes
+    </div>
+
+    <div
+      style={{
+        fontSize: "2rem",
+        fontWeight: "bold",
+      }}
+    >
+      {totalVotes}/{totalPlayers}
+    </div>
+  </div>
+</div>
+<div
+  style={{
+    background: "#1e293b",
+    border: "1px solid #334155",
+    borderRadius: "12px",
+    padding: "1rem",
+    marginTop: "2rem",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      justifyContent:
+        "space-between",
+    }}
+  >
+    <span>🗳️ Votes</span>
+
+    <span>
+      {totalVotes}/{totalPlayers}
+    </span>
+  </div>
+
+  <div
+    style={{
+      marginTop: "1rem",
+      fontWeight: "bold",
+    }}
+  >
+    {revealed ? (
+      <span
         style={{
           color: "#38bdf8",
         }}
       >
-        Room {roomCode}
-      </h2>
-<div
-  style={{
-    marginBottom: "2rem",
-  }}
->
-  <label>
-    Méthode d'estimation :
-  </label>
+        🔵 Votes révélés
+      </span>
+    ) : (
+      <span
+        style={{
+          color: "#22c55e",
+        }}
+      >
+        🟢 Vote en cours
+      </span>
+    )}
+  </div>
 
-  <select
-    value={estimationType}
-    onChange={(e) =>
-      updateEstimationType(
-        e.target.value
-      )
-    }
+  <div
     style={{
-      marginLeft: "1rem",
-      padding: "8px",
-      borderRadius: "8px",
+      marginTop: ".5rem",
+      height: "12px",
+      background: "#334155",
+      borderRadius: "12px",
+      overflow: "hidden",
     }}
   >
-    <option value="fibonacci">
-      Fibonacci
-    </option>
-
-    <option value="tshirt">
-      Taille T-Shirt
-    </option>
-  </select>
-</div>      <p>🔗 Lien de partage</p>
-
-      <input
-        readOnly
-        value={`${window.location.origin}/?room=${roomCode}`}
-        style={{
-          width: "100%",
-          padding: "12px",
-          background: "#1e293b",
-          color: "white",
-          border: "1px solid #334155",
-          borderRadius: "8px",
-        }}
-      />
-
-<button
-  style={{
-    marginTop: "1rem",
-    background: "#3b82f6",
-    color: "white",
-    border: "none",
-    padding: "12px 24px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    boxShadow:
-      "0 4px 10px rgba(59,130,246,.3)",
-  }}
-  onClick={() =>
-    navigator.clipboard.writeText(
-      `${window.location.origin}/?room=${roomCode}`
-    )
-  }
->
-  🔗 Copier le lien
-</button>
-      <h3
-        style={{
-          marginTop: "2rem",
-        }}
-      >
-        👥 Joueurs connectés
-      </h3>
-
-      <div
-        style={{
-          display: "flex",
-          gap: ".5rem",
-          flexWrap: "wrap",
-          marginBottom: "2rem",
-        }}
-      >
-        {connectedPlayers.map(
-          (player) => (
-            <div
-              key={player.id}
-              style={{
-                background: "#1e293b",
-                border: "1px solid #334155",
-                borderRadius: "999px",
-                padding: "6px 12px",
-              }}
-            >
-              🟢 {player.player_name}
-            </div>
-          )
-        )}
-      </div>
-
-      <div
-        style={{
-          background: "#1e293b",
-          border: "1px solid #334155",
-          borderRadius: "12px",
-          padding: "1rem",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent:
-              "space-between",
-          }}
-        >
-          <span>🗳️ Votes</span>
-          <span>
-            {totalVotes}/{totalPlayers}
-          </span>
-        </div>
-
-        <div
-          style={{
-            marginTop: ".5rem",
-            height: "12px",
-            background: "#334155",
-            borderRadius: "12px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: `${
-                totalPlayers > 0
-                  ? (totalVotes *
-                      100) /
-                    totalPlayers
-                  : 0
-              }%`,
-              background: "#38bdf8",
-              transition:
-                "width .3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(160px,1fr))",
-          gap: "1rem",
-          margin: "2rem 0",
-        }}
-      >
-        {players.map((player) => (
-          <PlayerCard
-            key={player.id}
-            player={{
-              name:
-                player.player_name,
-              vote: player.vote,
-            }}
-            revealed={revealed}
-          />
-        ))}
-      </div>
-
-<VotingCards
-  selected={selectedCard}
-  onSelect={handleVote}
-  estimationType={estimationType}
-/>
-{revealed &&
-  estimationType === "fibonacci" && (
-    <StatsCard
-      average={stats.average}
-      median={stats.median}
-      minVote={stats.minVote}
-      maxVote={stats.maxVote}
-      spread={stats.spread}
-      majorityVote={stats.majorityVote}
+    <div
+      style={{
+        height: "100%",
+        width: `${
+          totalPlayers > 0
+            ? (totalVotes * 100) /
+              totalPlayers
+            : 0
+        }%`,
+        background: "#38bdf8",
+        transition:
+          "width .3s ease",
+      }}
     />
-  )}
+  </div>
+</div>
+
 <div
   style={{
-    marginTop: "2rem",
+    display: "grid",
+    gridTemplateColumns:
+  "repeat(auto-fit,minmax(220px,1fr))",
+      gap: "1rem",
+    margin: "2rem 0",
+  }}
+>
+  {connectedPlayers.map(
+    (connectedPlayer) => {
+      const voteData =
+        players.find(
+          (player) =>
+            player.player_name ===
+            connectedPlayer.player_name
+        );
+
+      return (
+        <PlayerCard
+          key={connectedPlayer.id}
+          player={{
+            name:
+              connectedPlayer.player_name,
+            vote:
+              voteData?.vote ?? null,
+          }}
+          revealed={revealed}
+        />
+      );
+    }
+  )}
+</div>
+
+<div
+  style={{
+    minHeight: "170px",
+    display: "flex",
+    alignItems: "center",
+  }}
+>
+  <VotingCards
+    selected={selectedCard}
+    onSelect={handleVote}
+    estimationType={estimationType}
+  />
+</div>
+
+<div
+  style={{
     display: "flex",
     gap: "1rem",
+    marginTop: "2rem",
+    alignItems: "flex-start",
   }}
 >
-  <button
-    onClick={revealRoom}
-    style={{
-      background: "#22c55e",
-      color: "white",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "10px",
-      cursor: "pointer",
-      fontWeight: "bold",
-      fontSize: "1rem",
-      boxShadow:
-        "0 4px 10px rgba(34,197,94,.3)",
-    }}
-  >
-    👀 Reveal
-  </button>
-
-  <button
-    onClick={resetRoom}
-    style={{
-      background: "#ef4444",
-      color: "white",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "10px",
-      cursor: "pointer",
-      fontWeight: "bold",
-      fontSize: "1rem",
-      boxShadow:
-        "0 4px 10px rgba(239,68,68,.3)",
-    }}
-  >
-    🔄 Reset Room
-  </button>
+<div
+  style={{
+    flex: 1,
+    minHeight: "320px",
+  }}
+>
+  {revealed &&
+    estimationType ===
+      "fibonacci" && (
+      <StatsCard
+        average={stats.average}
+        median={stats.median}
+        minVote={stats.minVote}
+        maxVote={stats.maxVote}
+        spread={stats.spread}
+        majorityVote={
+          stats.majorityVote
+        }
+      />
+    )}
 </div>
-    </div>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    gap: "1rem",
+    marginTop: "1rem",
+  }}
+><button
+  onClick={revealRoom}
+  disabled={
+    totalVotes < totalPlayers
+  } style={{
+  background: "#16a34a",
+  color: "white",
+  border: "none",
+  padding: "14px 28px",
+  borderRadius: "12px",
+  fontWeight: "bold",
+  minWidth: "180px",
+  fontSize: "1rem",
+  boxShadow:
+    "0 10px 20px rgba(22,163,74,.3)",
+  opacity:
+    totalVotes < totalPlayers
+      ? 0.5
+      : 1,
+  cursor:
+    totalVotes < totalPlayers
+      ? "not-allowed"
+      : "pointer",
+}}
+    >
+      👀 Reveal
+    </button>
+
+<button
+      onClick={resetRoom}
+style={{
+  background: "#ef4444",
+  color: "white",
+  border: "none",
+  padding: "14px 28px",
+  borderRadius: "12px",
+  fontWeight: "bold",
+  minWidth: "180px",
+  fontSize: "1rem",
+  cursor: "pointer",
+  boxShadow:
+    "0 10px 20px rgba(239,68,68,.3)",
+}}    >
+      🔄 Reset
+    </button>
+  </div>
+</div>
+
+</div>
   );
 }
