@@ -161,8 +161,8 @@ export default function App() {
             }
             style={{
               width: "100%",
-              background:
-                "linear-gradient(135deg,#2563eb,#3b82f6)",
+              background:                "#334155",
+
               color: "white",
               border: "none",
               padding: "14px",
@@ -175,7 +175,7 @@ export default function App() {
                 "0 10px 25px rgba(37,99,235,.3)",
             }}
           >
-            🚀 Créer une room
+            🚀 Créer un code
           </button>
 
           <div
@@ -185,7 +185,7 @@ export default function App() {
               color: "#64748b",
             }}
           >
-            ou
+            
           </div>
 
           <button
@@ -193,7 +193,8 @@ export default function App() {
             style={{
               width: "100%",
               background:
-                "#334155",
+                              "linear-gradient(135deg,#2563eb,#3b82f6)",
+
               color: "white",
               border: "none",
               padding: "14px",

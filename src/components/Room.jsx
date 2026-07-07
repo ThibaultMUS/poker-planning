@@ -4,6 +4,7 @@ import VotingCards from "./VotingCards";
 import PlayerCard from "./PlayerCard";
 import StatsCard from "./StatsCard";
 import { computeStats } from "../utils/roomStats";
+import TshirtStats from "./TshirtStats";
 
 export default function Room({
   playerName,
@@ -11,6 +12,8 @@ export default function Room({
 }) {
   const [selectedCard, setSelectedCard] =
     useState(null);
+  const [copied, setCopied] =
+  useState(false);  
 
   const [revealed, setRevealed] =
     useState(false);
@@ -268,12 +271,18 @@ return (
   </div>
 
   <button
-    onClick={() =>
-      navigator.clipboard.writeText(
-        `${window.location.origin}/?room=${roomCode}`
-      )
-    }
-    style={{
+onClick={() => {
+  navigator.clipboard.writeText(
+    `${window.location.origin}/?room=${roomCode}`
+  );
+
+  setCopied(true);
+
+  setTimeout(() => {
+    setCopied(false);
+  }, 2000);
+}}
+  style={{
       background: "#2563eb",
       color: "white",
       border: "none",
@@ -529,21 +538,28 @@ return (
     minHeight: "320px",
   }}
 >
-  {revealed &&
-    estimationType ===
-      "fibonacci" && (
-      <StatsCard
-        average={stats.average}
-        median={stats.median}
-        minVote={stats.minVote}
-        maxVote={stats.maxVote}
-        spread={stats.spread}
-        majorityVote={
-          stats.majorityVote
-        }
-      />
-    )}
-</div>
+{revealed &&
+  estimationType ===
+    "fibonacci" && (
+    <StatsCard
+      average={stats.average}
+      median={stats.median}
+      minVote={stats.minVote}
+      maxVote={stats.maxVote}
+      spread={stats.spread}
+      majorityVote={
+        stats.majorityVote
+      }
+    />
+  )}
+
+{revealed &&
+  estimationType ===
+    "tshirt" && (
+    <TshirtStats
+      players={players}
+    />
+  )}</div>
 <div
   style={{
     display: "flex",
@@ -596,7 +612,25 @@ style={{
 }}    >
       🔄 Reset
     </button>
+  {copied && (
+  <div
+    style={{
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      background: "#16a34a",
+      color: "white",
+      padding: "12px 20px",
+      borderRadius: "12px",
+      fontWeight: "bold",
+      boxShadow:
+        "0 10px 25px rgba(0,0,0,.3)",
+      zIndex: 9999,
+    }}
+  >
+    ✅ Lien copié dans le presse‑papier
   </div>
+)}</div>
 </div>
 
 </div>
